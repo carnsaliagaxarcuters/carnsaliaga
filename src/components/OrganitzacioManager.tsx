@@ -9,6 +9,7 @@ import { DataTable, DataTableRef } from './DataTable';
 
 interface OrganitzacioManagerProps {
   language: Language;
+  empresaContext?: string;
 }
 
 const SHIFT_TYPES = [
@@ -21,7 +22,7 @@ const SHIFT_TYPES = [
   { id: 'B', color: 'bg-red-100 text-red-800 border-red-200' },
 ] as const;
 
-export function OrganitzacioManager({ language }: OrganitzacioManagerProps) {
+export function OrganitzacioManager({ language, empresaContext }: OrganitzacioManagerProps) {
   const [view, setView] = useState<'calendar' | 'workers'>('calendar');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [treballadors, setTreballadors] = useState<Treballador[]>([]);
@@ -52,10 +53,20 @@ export function OrganitzacioManager({ language }: OrganitzacioManagerProps) {
     setLoading(true);
     try {
       // Fetch workers
-      const { data: workersData, error: workersError } = await supabase
+      let workersQuery = supabase
         .from('treballadors')
         .select('*')
         .order('nom');
+
+      if (empresaContext && empresaContext !== 'Totes') {
+        if (empresaContext === 'HISTORIC') {
+          workersQuery = workersQuery.in('empresa', ['EMBOTITS', 'CARN']);
+        } else {
+          workersQuery = workersQuery.eq('empresa', empresaContext);
+        }
+      }
+
+      const { data: workersData, error: workersError } = await workersQuery;
       
       if (workersError) throw workersError;
       setTreballadors(workersData || []);
@@ -64,11 +75,21 @@ export function OrganitzacioManager({ language }: OrganitzacioManagerProps) {
       const startDateStr = weekDays[0].toISOString().split('T')[0];
       const endDateStr = weekDays[13].toISOString().split('T')[0];
 
-      const { data: schedulesData, error: schedulesError } = await supabase
+      let schedulesQuery = supabase
         .from('horaris')
         .select('*')
         .gte('fecha', startDateStr)
         .lte('fecha', endDateStr);
+
+      if (empresaContext && empresaContext !== 'Totes') {
+        if (empresaContext === 'HISTORIC') {
+          schedulesQuery = schedulesQuery.in('empresa', ['EMBOTITS', 'CARN']);
+        } else {
+          schedulesQuery = schedulesQuery.eq('empresa', empresaContext);
+        }
+      }
+
+      const { data: schedulesData, error: schedulesError } = await schedulesQuery;
 
       if (schedulesError) throw schedulesError;
       setHoraris(schedulesData || []);
@@ -121,7 +142,8 @@ export function OrganitzacioManager({ language }: OrganitzacioManagerProps) {
         const { data, error } = await supabase.from('horaris').insert({
           treballador_id: selectedCell.treballadorId,
           fecha: selectedCell.date,
-          torn
+          torn,
+          empresa: (empresaContext && empresaContext !== 'Totes' && empresaContext !== 'HISTORIC') ? empresaContext : 'CARNS ALIAGA'
         }).select().single();
 
         if (error) throw error;
@@ -352,6 +374,7 @@ export function OrganitzacioManager({ language }: OrganitzacioManagerProps) {
           ref={workersTableRef}
           tableName="treballadors"
           language={language}
+          empresaContext={empresaContext}
           columns={[
             { key: 'nom', header: t.treballadors.nom, type: 'text' },
             { key: 'dni', header: t.treballadors.dni, type: 'text' },
@@ -359,6 +382,7 @@ export function OrganitzacioManager({ language }: OrganitzacioManagerProps) {
             { key: 'direccio', header: t.treballadors.direccio, type: 'text' },
             { key: 'num_ss', header: t.treballadors.num_ss, type: 'text' },
             { key: 'tipus_contracte', header: t.treballadors.tipus_contracte, type: 'select', options: ['Indefinit', 'Temporal', 'Pràctiques', 'Fix Discontinu'] },
+            { key: 'empresa', header: t.registre.empresa, type: 'select', options: ['CARNS ALIAGA', 'EMBOTITS', 'CARN'] },
           ]}
         />
       )}

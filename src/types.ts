@@ -35,6 +35,7 @@ export interface Gasto {
   fecha: string;
   proveidor: string;
   tipus: string;
+  empresa: string;
 }
 
 export interface GastoPlantilla {
@@ -43,6 +44,7 @@ export interface GastoPlantilla {
   import: number;
   proveidor: string;
   tipus: string;
+  empresa: string;
 }
 
 export interface PagoProveedor {
@@ -65,6 +67,7 @@ export interface Nomina {
   import: number;
   fecha: string;
   estat: 'pendent' | 'pagat';
+  empresa: string;
 }
 
 export interface Proveidor {
@@ -96,6 +99,7 @@ export interface Cliente {
   provincia: string;
   pais: string;
   codi_postal: string;
+  empresa: string;
 }
 
 export interface Empresa {
@@ -117,6 +121,7 @@ export interface Treballador {
   dni: string;
   num_ss: string;
   tipus_contracte: string;
+  empresa: string;
 }
 
 export interface Horari {
@@ -124,4 +129,5 @@ export interface Horari {
   treballador_id: string;
   fecha: string;
   torn: string;
+  empresa: string;
 }

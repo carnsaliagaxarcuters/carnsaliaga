@@ -20,10 +20,11 @@ interface PagosProveedoresByProveedorProps {
   language: Language;
   onAddPago?: (proveedorName: string) => void;
   onEditPago?: (pago: PagoProveedor) => void;
+  empresaContext?: string;
 }
 
 export const PagosProveedoresByProveedor = forwardRef<PagosProveedoresByProveedorRef, PagosProveedoresByProveedorProps>(
-  ({ language, onAddPago, onEditPago }, ref) => {
+  ({ language, onAddPago, onEditPago, empresaContext }, ref) => {
     const [groupedData, setGroupedData] = useState<GroupedPago[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -32,11 +33,20 @@ export const PagosProveedoresByProveedor = forwardRef<PagosProveedoresByProveedo
 
     const fetchData = async () => {
       setLoading(true);
-      const { data, error } = await supabase
+      let query = supabase
         .from('pagos_proveedores')
         .select('*')
         .order('fecha', { ascending: false });
 
+      if (empresaContext && empresaContext !== 'Totes') {
+        if (empresaContext === 'HISTORIC') {
+          query = query.in('empresa', ['EMBOTITS', 'CARN']);
+        } else {
+          query = query.eq('empresa', empresaContext);
+        }
+      }
+
+      const { data, error } = await query;
       if (error) {
         console.error('Error fetching pagos:', error);
       } else {

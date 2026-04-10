@@ -15,6 +15,7 @@ export default function App() {
   const [currentView, setCurrentView] = useState('registre');
   const [impagatsSubView, setImpagatsSubView] = useState<'date' | 'client'>('client');
   const [language, setLanguage] = useState<Language>('ca');
+  const [globalEmpresa, setGlobalEmpresa] = useState<string>('CARNS ALIAGA');
   const impagatsRef = useRef<DataTableRef<Impagat>>(null);
   const impagatsByClientRef = useRef<ImpagatsByClientRef>(null);
   const t = translations[language];
@@ -35,6 +36,7 @@ export default function App() {
             <DataTable<Registro>
               tableName="registros"
               language={language}
+              empresaContext={globalEmpresa}
               columns={[
                 { key: 'fecha', header: t.registre.fecha, type: 'date' },
                 { key: 'dia_setmana', header: t.registre.dia_setmana, type: 'text', hiddenInForm: true },
@@ -47,7 +49,7 @@ export default function App() {
                 { key: 'pagats', header: t.registre.pagats, type: 'number', currency: true, readOnly: true },
                 { key: 'proveidors', header: t.registre.proveidors, type: 'number', currency: true },
                 { key: 'total', header: t.registre.total, type: 'number', currency: true, hiddenInForm: true },
-                { key: 'empresa', header: t.registre.empresa, type: 'text', hiddenInForm: true },
+                { key: 'empresa', header: t.registre.empresa, type: 'select', options: ['CARNS ALIAGA', 'EMBOTITS', 'CARN'] },
                 { key: 'campanya', header: t.registre.campanya, type: 'text' },
               ]}
             />
@@ -91,6 +93,7 @@ export default function App() {
                 ref={impagatsRef}
                 tableName="impagats"
                 language={language}
+                empresaContext={globalEmpresa}
                 onDataChange={() => {
                   impagatsByClientRef.current?.fetchData();
                 }}
@@ -98,7 +101,7 @@ export default function App() {
                   { key: 'fecha', header: t.impagats.fecha, type: 'date' },
                   { key: 'client', header: t.impagats.client, type: 'select', foreignTable: 'clientes', foreignLabel: 'nom' },
                   { key: 'import', header: t.impagats.import, type: 'number', currency: true },
-                  { key: 'empresa', header: t.impagats.empresa, type: 'text', hiddenInForm: true },
+                  { key: 'empresa', header: t.impagats.empresa, type: 'select', options: ['CARNS ALIAGA', 'EMBOTITS', 'CARN'] },
                   { key: 'tipus_pagament', header: t.impagats.tipus_pagament, type: 'select', options: ['EFECTIVO', 'TARJETA', 'TRANSFERENCIA', 'BIZUM', 'XEC', 'BAR'] },
                   { key: 'fecha_pagament', header: t.impagats.fecha_pagament, type: 'date' },
                   { key: 'pagat', header: t.impagats.pagat, type: 'boolean' },
@@ -110,6 +113,7 @@ export default function App() {
               <>
                 <ImpagatsByClient 
                   language={language}
+                  empresaContext={globalEmpresa}
                   ref={impagatsByClientRef}
                   onAddImpagat={(clientName) => {
                     impagatsRef.current?.openPanel({ client: clientName });
@@ -122,6 +126,7 @@ export default function App() {
                   ref={impagatsRef}
                   tableName="impagats"
                   language={language}
+                  empresaContext={globalEmpresa}
                   hideTable={true}
                   onDataChange={() => {
                     impagatsByClientRef.current?.fetchData();
@@ -130,7 +135,7 @@ export default function App() {
                     { key: 'fecha', header: t.impagats.fecha, type: 'date' },
                     { key: 'client', header: t.impagats.client, type: 'select', foreignTable: 'clientes', foreignLabel: 'nom' },
                     { key: 'import', header: t.impagats.import, type: 'number', currency: true },
-                    { key: 'empresa', header: t.impagats.empresa, type: 'text', hiddenInForm: true },
+                    { key: 'empresa', header: t.impagats.empresa, type: 'select', options: ['CARNS ALIAGA', 'EMBOTITS', 'CARN'] },
                     { key: 'tipus_pagament', header: t.impagats.tipus_pagament, type: 'select', options: ['EFECTIVO', 'TARJETA', 'TRANSFERENCIA', 'BIZUM', 'XEC', 'BAR'] },
                     { key: 'fecha_pagament', header: t.impagats.fecha_pagament, type: 'date' },
                     { key: 'pagat', header: t.impagats.pagat, type: 'boolean' },
@@ -143,11 +148,11 @@ export default function App() {
           </div>
         );
       case 'gastos':
-        return <GastosManager language={language} />;
+        return <GastosManager language={language} empresaContext={globalEmpresa} />;
       case 'pagos_proveedores':
-        return <PagosProveedoresManager language={language} />;
+        return <PagosProveedoresManager language={language} empresaContext={globalEmpresa} />;
       case 'organitzacio':
-        return <OrganitzacioManager language={language} />;
+        return <OrganitzacioManager language={language} empresaContext={globalEmpresa} />;
       case 'nominas':
         return (
           <div className="space-y-6">
@@ -158,11 +163,13 @@ export default function App() {
             <DataTable<Nomina>
               tableName="nominas"
               language={language}
+              empresaContext={globalEmpresa}
               columns={[
                 { key: 'fecha', header: t.nominas.fecha, type: 'date' },
                 { key: 'empleat', header: t.nominas.empleat, type: 'text' },
                 { key: 'import', header: t.nominas.import, type: 'number', currency: true },
                 { key: 'estat', header: t.nominas.estat, type: 'select', options: ['pendent', 'pagat'] },
+                { key: 'empresa', header: t.registre.empresa, type: 'select', options: ['CARNS ALIAGA', 'EMBOTITS', 'CARN'] },
               ]}
             />
           </div>
@@ -176,6 +183,7 @@ export default function App() {
             <DataTable<Proveidor>
               tableName="proveidors"
               language={language}
+              empresaContext={globalEmpresa}
               columns={[
                 { key: 'nom', header: t.proveidors.nom, type: 'text' },
                 { key: 'nif', header: t.proveidors.nif, type: 'text' },
@@ -184,7 +192,7 @@ export default function App() {
                 { key: 'ciutat', header: t.proveidors.ciutat, type: 'text' },
                 { key: 'direccio', header: t.proveidors.direccio, type: 'text' },
                 { key: 'web', header: t.proveidors.web, type: 'text' },
-                { key: 'empresa', header: t.proveidors.empresa, type: 'text' },
+                { key: 'empresa', header: t.proveidors.empresa, type: 'select', options: ['CARNS ALIAGA', 'EMBOTITS', 'CARN'] },
                 { key: 'tipus', header: t.proveidors.tipus, type: 'select', options: [] },
               ]}
             />
@@ -200,6 +208,7 @@ export default function App() {
             <DataTable<Cliente>
               tableName="clientes"
               language={language}
+              empresaContext={globalEmpresa}
               columns={[
                 { key: 'nom', header: t.clientes.nom, type: 'text' },
                 { key: 'tipo', header: t.clientes.tipo, type: 'select', options: [] },
@@ -215,6 +224,7 @@ export default function App() {
                 { key: 'provincia', header: t.clientes.provincia, type: 'text' },
                 { key: 'pais', header: t.clientes.pais, type: 'text' },
                 { key: 'codi_postal', header: t.clientes.codi_postal, type: 'text' },
+                { key: 'empresa', header: t.registre.empresa, type: 'select', options: ['CARNS ALIAGA', 'EMBOTITS', 'CARN'] },
               ]}
             />
           </div>
@@ -235,6 +245,8 @@ export default function App() {
         setCurrentView={setCurrentView} 
         language={language} 
         setLanguage={setLanguage} 
+        globalEmpresa={globalEmpresa}
+        setGlobalEmpresa={setGlobalEmpresa}
       />
       
       <main className="flex-1 ml-64 p-8">

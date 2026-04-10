@@ -9,9 +9,10 @@ import { motion, AnimatePresence } from 'motion/react';
 
 interface GastosManagerProps {
   language: Language;
+  empresaContext?: string;
 }
 
-export function GastosManager({ language }: GastosManagerProps) {
+export function GastosManager({ language, empresaContext }: GastosManagerProps) {
   const [view, setView] = useState<'monthly' | 'template'>('monthly');
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
   const [isImporting, setIsImporting] = useState(false);
@@ -216,14 +217,16 @@ export function GastosManager({ language }: GastosManagerProps) {
             ref={monthlyTableRef}
             tableName="gastos"
             language={language}
+            empresaContext={empresaContext}
             filterColumn="fecha"
             filterValue={`${selectedMonth}%`}
             columns={[
               { key: 'fecha', header: t.gastos.fecha, type: 'date' },
               { key: 'nom', header: t.gastos.nom, type: 'text' },
               { key: 'import', header: t.gastos.import, type: 'number', currency: true },
-              { key: 'proveidor', header: t.gastos.proveidor, type: 'text' },
+              { key: 'proveidor', header: t.gastos.proveidor, type: 'select', foreignTable: 'proveidors', foreignLabel: 'nom' },
               { key: 'tipus', header: t.gastos.tipus, type: 'select', options: ['Mensual', 'Trimestral', 'Anual'] },
+              { key: 'empresa', header: t.registre.empresa, type: 'select', options: ['CARNS ALIAGA', 'EMBOTITS', 'CARN'] },
             ]}
           />
         </div>
@@ -241,13 +244,15 @@ export function GastosManager({ language }: GastosManagerProps) {
             ref={templateTableRef}
             tableName="gastos_plantilla"
             language={language}
+            empresaContext={empresaContext}
             selectable={true}
             defaultSelectedAll={true}
             columns={[
               { key: 'nom', header: t.gastos.nom, type: 'text' },
               { key: 'import', header: t.gastos.import, type: 'number', currency: true },
-              { key: 'proveidor', header: t.gastos.proveidor, type: 'text' },
+              { key: 'proveidor', header: t.gastos.proveidor, type: 'select', foreignTable: 'proveidors', foreignLabel: 'nom' },
               { key: 'tipus', header: t.gastos.tipus, type: 'select', options: ['Mensual', 'Trimestral', 'Anual'] },
+              { key: 'empresa', header: t.registre.empresa, type: 'select', options: ['CARNS ALIAGA', 'EMBOTITS', 'CARN'] },
             ]}
           />
         </div>

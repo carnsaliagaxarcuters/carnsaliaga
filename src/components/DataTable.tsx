@@ -36,10 +36,11 @@ interface DataTableProps<T> {
   selectable?: boolean;
   defaultSelectedAll?: boolean;
   onAddForeign?: (columnKey: keyof T) => void;
+  empresaContext?: string;
 }
 
 export const DataTable = forwardRef(<T extends { id: string }>(
-  { tableName, columns, language, onDataChange, hideTable, filterColumn, filterValue, selectable, defaultSelectedAll, onAddForeign }: DataTableProps<T>,
+  { tableName, columns, language, onDataChange, hideTable, filterColumn, filterValue, selectable, defaultSelectedAll, onAddForeign, empresaContext }: DataTableProps<T>,
   ref: React.Ref<DataTableRef<T>>
 ) => {
   const [data, setData] = useState<T[]>([]);
@@ -95,6 +96,14 @@ export const DataTable = forwardRef(<T extends { id: string }>(
   const fetchData = async () => {
     setLoading(true);
     let query = supabase.from(tableName).select('*');
+
+    if (empresaContext && empresaContext !== 'Totes') {
+      if (empresaContext === 'HISTORIC') {
+        query = query.in('empresa', ['EMBOTITS', 'CARN']);
+      } else {
+        query = query.eq('empresa', empresaContext);
+      }
+    }
 
     if (filterColumn && filterValue !== undefined && filterValue !== null) {
       const column = columns.find(c => c.key === filterColumn);
@@ -194,7 +203,9 @@ export const DataTable = forwardRef(<T extends { id: string }>(
       setOriginalItem(null);
       const newItem: any = {};
       columns.forEach(col => {
-        if (col.key === 'empresa') newItem[col.key] = 'Carns Aliaga';
+        if (col.key === 'empresa') {
+          newItem[col.key] = (empresaContext && empresaContext !== 'Totes' && empresaContext !== 'HISTORIC') ? empresaContext : 'CARNS ALIAGA';
+        }
         else if (col.type === 'number') newItem[col.key] = 0;
         else if (col.type === 'boolean') newItem[col.key] = false;
         else if (col.type === 'date') {

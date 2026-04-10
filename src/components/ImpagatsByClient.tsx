@@ -20,10 +20,11 @@ interface ImpagatsByClientProps {
   language: Language;
   onAddImpagat?: (clientName: string) => void;
   onEditImpagat?: (impagat: Impagat) => void;
+  empresaContext?: string;
 }
 
 export const ImpagatsByClient = forwardRef<ImpagatsByClientRef, ImpagatsByClientProps>(
-  ({ language, onAddImpagat, onEditImpagat }, ref) => {
+  ({ language, onAddImpagat, onEditImpagat, empresaContext }, ref) => {
     const [groupedData, setGroupedData] = useState<GroupedImpagat[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -32,10 +33,20 @@ export const ImpagatsByClient = forwardRef<ImpagatsByClientRef, ImpagatsByClient
 
     const fetchData = async () => {
       setLoading(true);
-      const { data, error } = await supabase
+      let query = supabase
         .from('impagats')
         .select('*')
         .order('fecha', { ascending: false });
+
+      if (empresaContext && empresaContext !== 'Totes') {
+        if (empresaContext === 'HISTORIC') {
+          query = query.in('empresa', ['EMBOTITS', 'CARN']);
+        } else {
+          query = query.eq('empresa', empresaContext);
+        }
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error('Error fetching impagats:', error);

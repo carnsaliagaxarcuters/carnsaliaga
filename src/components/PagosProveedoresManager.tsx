@@ -6,9 +6,10 @@ import { PagosProveedoresByProveedor, PagosProveedoresByProveedorRef } from './P
 
 interface PagosProveedoresManagerProps {
   language: Language;
+  empresaContext?: string;
 }
 
-export function PagosProveedoresManager({ language }: PagosProveedoresManagerProps) {
+export function PagosProveedoresManager({ language, empresaContext }: PagosProveedoresManagerProps) {
   const [subView, setSubView] = useState<'date' | 'proveedor'>('date');
   const t = translations[language];
   const pagosRef = useRef<DataTableRef<PagoProveedor>>(null);
@@ -62,6 +63,7 @@ export function PagosProveedoresManager({ language }: PagosProveedoresManagerPro
           ref={pagosRef}
           tableName="pagos_proveedores"
           language={language}
+          empresaContext={empresaContext}
           onAddForeign={handleAddProveedor}
           onDataChange={() => {
             pagosByProveedorRef.current?.fetchData();
@@ -83,6 +85,7 @@ export function PagosProveedoresManager({ language }: PagosProveedoresManagerPro
         <>
           <PagosProveedoresByProveedor 
             language={language}
+            empresaContext={empresaContext}
             ref={pagosByProveedorRef}
             onAddPago={(proveedorName) => {
               pagosRef.current?.openPanel({ proveedor: proveedorName });
@@ -95,6 +98,7 @@ export function PagosProveedoresManager({ language }: PagosProveedoresManagerPro
             ref={pagosRef}
             tableName="pagos_proveedores"
             language={language}
+            empresaContext={empresaContext}
             hideTable={true}
             onAddForeign={handleAddProveedor}
             onDataChange={() => {
@@ -121,6 +125,7 @@ export function PagosProveedoresManager({ language }: PagosProveedoresManagerPro
         ref={proveedoresRef}
         tableName="proveidors"
         language={language}
+        empresaContext={empresaContext}
         hideTable={true}
         onDataChange={handleProveedoresChange}
         columns={[
@@ -131,7 +136,7 @@ export function PagosProveedoresManager({ language }: PagosProveedoresManagerPro
           { key: 'ciutat', header: t.proveidors.ciutat, type: 'text' },
           { key: 'direccio', header: t.proveidors.direccio, type: 'text' },
           { key: 'web', header: t.proveidors.web, type: 'text' },
-          { key: 'empresa', header: t.proveidors.empresa, type: 'text' },
+          { key: 'empresa', header: t.proveidors.empresa, type: 'select', options: ['CARNS ALIAGA', 'EMBOTITS', 'CARN'] },
           { key: 'tipus', header: t.proveidors.tipus, type: 'select', options: [] },
         ]}
       />

@@ -24,9 +24,11 @@ interface SidebarProps {
   setCurrentView: (view: string) => void;
   language: Language;
   setLanguage: (lang: Language) => void;
+  globalEmpresa: string;
+  setGlobalEmpresa: (empresa: string) => void;
 }
 
-export function Sidebar({ currentView, setCurrentView, language, setLanguage }: SidebarProps) {
+export function Sidebar({ currentView, setCurrentView, language, setLanguage, globalEmpresa, setGlobalEmpresa }: SidebarProps) {
   const t = translations[language];
   const [isGastosOpen, setIsGastosOpen] = useState(
     currentView === 'gastos' || currentView === 'pagos_proveedores' || currentView === 'nominas'
@@ -56,12 +58,27 @@ export function Sidebar({ currentView, setCurrentView, language, setLanguage }: 
   return (
     <div className="w-64 h-screen bg-white border-r border-gray-200 flex flex-col fixed left-0 top-0">
       <div className="p-6">
-        <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+        <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2 mb-6">
           <div className="w-8 h-8 bg-[#464971] rounded-lg flex items-center justify-center text-white">
             CA
           </div>
           CARNS ALIAGA
         </h1>
+
+        <div className="mb-2">
+          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 block px-1">
+            Empresa Activa
+          </label>
+          <select
+            value={globalEmpresa}
+            onChange={(e) => setGlobalEmpresa(e.target.value)}
+            className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-bold text-[#464971] focus:outline-none focus:ring-2 focus:ring-[#464971]/20 focus:border-[#464971] transition-all cursor-pointer"
+          >
+            <option value="Totes">Totes les empreses</option>
+            <option value="CARNS ALIAGA">Només Carns Aliaga</option>
+            <option value="HISTORIC">Només Històric (Embotits + Carn)</option>
+          </select>
+        </div>
       </div>
 
       <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
