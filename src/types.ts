@@ -45,6 +45,20 @@ export interface GastoPlantilla {
   tipus: string;
 }
 
+export interface PagoProveedor {
+  id: string;
+  proveedor: string;
+  import: number;
+  fecha: string;
+  num_factura: string;
+  empresa: string;
+  observaciones: string;
+  tipo_pago: string;
+  pagado: boolean;
+  fecha_pago: string | null;
+  tipo: string;
+}
+
 export interface Nomina {
   id: string;
   empleat: string;
@@ -56,8 +70,14 @@ export interface Nomina {
 export interface Proveidor {
   id: string;
   nom: string;
-  contacte: string;
-  categoria: string;
+  nif: string;
+  email: string;
+  telefon: string;
+  ciutat: string;
+  direccio: string;
+  web: string;
+  empresa: string;
+  tipus: string;
 }
 
 export interface Cliente {

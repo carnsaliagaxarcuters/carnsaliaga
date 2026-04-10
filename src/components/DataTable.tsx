@@ -10,6 +10,7 @@ export interface DataTableRef<T> {
   openPanel: (item?: Partial<T> | null) => void;
   fetchData: () => void;
   getSelectedItems?: () => T[];
+  refreshOptions?: () => void;
 }
 
 interface Column<T> {
@@ -34,10 +35,11 @@ interface DataTableProps<T> {
   filterValue?: any;
   selectable?: boolean;
   defaultSelectedAll?: boolean;
+  onAddForeign?: (columnKey: keyof T) => void;
 }
 
 export const DataTable = forwardRef(<T extends { id: string }>(
-  { tableName, columns, language, onDataChange, hideTable, filterColumn, filterValue, selectable, defaultSelectedAll }: DataTableProps<T>,
+  { tableName, columns, language, onDataChange, hideTable, filterColumn, filterValue, selectable, defaultSelectedAll, onAddForeign }: DataTableProps<T>,
   ref: React.Ref<DataTableRef<T>>
 ) => {
   const [data, setData] = useState<T[]>([]);
@@ -179,7 +181,9 @@ export const DataTable = forwardRef(<T extends { id: string }>(
 
   useImperativeHandle(ref, () => ({
     openPanel: handleOpenPanel,
-    fetchData
+    fetchData,
+    getSelectedItems: () => data.filter(item => selectedIds.has(item.id)),
+    refreshOptions: fetchDynamicOptions
   }));
 
   const handleOpenPanel = (item: Partial<T> | null = null) => {
@@ -647,7 +651,13 @@ export const DataTable = forwardRef(<T extends { id: string }>(
                         )}
                         {col.foreignTable && (
                           <button
-                            onClick={() => setQuickAddConfig({ isOpen: true, column: col })}
+                            onClick={() => {
+                              if (onAddForeign) {
+                                onAddForeign(col.key);
+                              } else {
+                                setQuickAddConfig({ isOpen: true, column: col });
+                              }
+                            }}
                             className="p-2.5 bg-gray-100 border border-gray-200 rounded-xl hover:bg-gray-200 transition-colors text-gray-500"
                             title={`Afegir nou ${col.foreignTable}`}
                           >

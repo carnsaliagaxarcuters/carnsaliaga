@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { DataTable, DataTableRef } from './components/DataTable';
 import { GastosManager } from './components/GastosManager';
+import { PagosProveedoresManager } from './components/PagosProveedoresManager';
 import { OrganitzacioManager } from './components/OrganitzacioManager';
 import { Analysis } from './components/Analysis';
 import { CompanyInfo } from './components/CompanyInfo';
@@ -143,6 +144,8 @@ export default function App() {
         );
       case 'gastos':
         return <GastosManager language={language} />;
+      case 'pagos_proveedores':
+        return <PagosProveedoresManager language={language} />;
       case 'organitzacio':
         return <OrganitzacioManager language={language} />;
       case 'nominas':
@@ -175,8 +178,14 @@ export default function App() {
               language={language}
               columns={[
                 { key: 'nom', header: t.proveidors.nom, type: 'text' },
-                { key: 'contacte', header: t.proveidors.contacte, type: 'text' },
-                { key: 'categoria', header: t.proveidors.categoria, type: 'text' },
+                { key: 'nif', header: t.proveidors.nif, type: 'text' },
+                { key: 'email', header: t.proveidors.email, type: 'text' },
+                { key: 'telefon', header: t.proveidors.telefon, type: 'text' },
+                { key: 'ciutat', header: t.proveidors.ciutat, type: 'text' },
+                { key: 'direccio', header: t.proveidors.direccio, type: 'text' },
+                { key: 'web', header: t.proveidors.web, type: 'text' },
+                { key: 'empresa', header: t.proveidors.empresa, type: 'text' },
+                { key: 'tipus', header: t.proveidors.tipus, type: 'select', options: [] },
               ]}
             />
           </div>

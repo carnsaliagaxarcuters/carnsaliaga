@@ -14,7 +14,7 @@ interface OrganitzacioManagerProps {
 const SHIFT_TYPES = [
   { id: 'M', color: 'bg-blue-100 text-blue-800 border-blue-200' },
   { id: 'T', color: 'bg-orange-100 text-orange-800 border-orange-200' },
-  { id: 'J', color: 'bg-indigo-100 text-indigo-800 border-indigo-200' },
+  { id: 'J', color: 'bg-[#464971] text-white border-[#464971]' },
   { id: 'D', color: 'bg-gray-100 text-gray-800 border-gray-200' },
   { id: 'V', color: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
   { id: 'F', color: 'bg-purple-100 text-purple-800 border-purple-200' },
