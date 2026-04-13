@@ -10,9 +10,10 @@ import { motion, AnimatePresence } from 'motion/react';
 interface GastosManagerProps {
   language: Language;
   empresaContext?: string;
+  proveidorsRef?: React.RefObject<DataTableRef<any>>;
 }
 
-export function GastosManager({ language, empresaContext }: GastosManagerProps) {
+export function GastosManager({ language, empresaContext, proveidorsRef }: GastosManagerProps) {
   const [view, setView] = useState<'monthly' | 'template'>('monthly');
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
   const [isImporting, setIsImporting] = useState(false);
@@ -50,7 +51,11 @@ export function GastosManager({ language, empresaContext }: GastosManagerProps) 
 
       // 2. Prepare items for current month
       // Use today's date for the imported records as requested
-      const today = new Date().toISOString().split('T')[0];
+      const d = new Date();
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const today = `${year}-${month}-${day}`;
       const importMonth = today.slice(0, 7);
       
       const newGastos = templateItems.map(item => ({
@@ -220,6 +225,11 @@ export function GastosManager({ language, empresaContext }: GastosManagerProps) 
             empresaContext={empresaContext}
             filterColumn="fecha"
             filterValue={`${selectedMonth}%`}
+            onAddForeign={(foreignTable) => {
+              if (foreignTable === 'proveidor') {
+                proveidorsRef?.current?.openPanel();
+              }
+            }}
             columns={[
               { key: 'fecha', header: t.gastos.fecha, type: 'date' },
               { key: 'nom', header: t.gastos.nom, type: 'text' },
@@ -247,6 +257,11 @@ export function GastosManager({ language, empresaContext }: GastosManagerProps) 
             empresaContext={empresaContext}
             selectable={true}
             defaultSelectedAll={true}
+            onAddForeign={(foreignTable) => {
+              if (foreignTable === 'proveidor') {
+                proveidorsRef?.current?.openPanel();
+              }
+            }}
             columns={[
               { key: 'nom', header: t.gastos.nom, type: 'text' },
               { key: 'import', header: t.gastos.import, type: 'number', currency: true },

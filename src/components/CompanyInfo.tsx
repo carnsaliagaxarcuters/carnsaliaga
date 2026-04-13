@@ -7,9 +7,10 @@ import { translations, Language } from '../lib/translations';
 
 interface CompanyInfoProps {
   language: Language;
+  empresaContext?: string;
 }
 
-export function CompanyInfo({ language }: CompanyInfoProps) {
+export function CompanyInfo({ language, empresaContext }: CompanyInfoProps) {
   const [empresa, setEmpresa] = useState<Empresa | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -47,6 +48,7 @@ export function CompanyInfo({ language }: CompanyInfoProps) {
 
     if (error) {
       console.error('Error updating empresa:', error);
+      alert(language === 'ca' ? `Error en guardar: ${error.message}` : `Error al guardar: ${error.message}`);
     } else {
       setIsEditing(false);
     }
@@ -211,13 +213,15 @@ export function CompanyInfo({ language }: CompanyInfoProps) {
         <DataTable<Treballador>
           tableName="treballadors"
           language={language}
+          empresaContext={empresaContext}
           columns={[
             { key: 'nom', header: t.treballadors.nom, type: 'text' },
             { key: 'direccio', header: t.treballadors.direccio, type: 'text' },
             { key: 'fecha_naixement', header: t.treballadors.fecha_naixement, type: 'date' },
             { key: 'dni', header: t.treballadors.dni, type: 'text' },
             { key: 'num_ss', header: t.treballadors.num_ss, type: 'text' },
-            { key: 'tipus_contracte', header: t.treballadors.tipus_contracte, type: 'text' },
+            { key: 'tipus_contracte', header: t.treballadors.tipus_contracte, type: 'select', options: ['Indefinit', 'Temporal', 'Pràctiques', 'Fix Discontinu'] },
+            { key: 'empresa', header: t.registre.empresa, type: 'select', options: ['CARNS ALIAGA', 'EMBOTITS', 'CARN'] },
           ]}
         />
       </section>

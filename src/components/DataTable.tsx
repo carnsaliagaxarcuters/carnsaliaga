@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
+import React, { useState, useEffect, useImperativeHandle, forwardRef, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { cn, formatCurrency, formatDate } from '../lib/utils';
 import { translations, Language } from '../lib/translations';
-import { Search, Plus, Trash2, Edit2, Save, X, ChevronRight, Settings2, UserPlus, Check } from 'lucide-react';
+import { Search, Plus, Trash2, Edit2, Save, X, ChevronRight, Settings2, UserPlus, Check, Download, Upload } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { OptionManager } from './OptionManager';
+import * as XLSX from 'xlsx';
 
 export interface DataTableRef<T> {
   openPanel: (item?: Partial<T> | null) => void;
@@ -55,6 +56,7 @@ export const DataTable = forwardRef(<T extends { id: string }>(
   const [optionManagerConfig, setOptionManagerConfig] = useState<{ isOpen: boolean; columnKey: string } | null>(null);
   const [quickAddConfig, setQuickAddConfig] = useState<{ isOpen: boolean; column: Column<T> } | null>(null);
   const [quickAddValue, setQuickAddValue] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const t = translations[language];
 
   useEffect(() => {
@@ -147,7 +149,7 @@ export const DataTable = forwardRef(<T extends { id: string }>(
 
   useEffect(() => {
     fetchData();
-  }, [tableName, filterValue]);
+  }, [tableName, filterValue, empresaContext]);
 
   useEffect(() => {
     const updateTotals = async () => {
@@ -211,7 +213,11 @@ export const DataTable = forwardRef(<T extends { id: string }>(
         else if (col.type === 'date') {
           // Only default 'fecha' to today, others empty
           if (col.key === 'fecha') {
-            newItem[col.key] = new Date().toISOString().split('T')[0];
+            const d = new Date();
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            newItem[col.key] = `${year}-${month}-${day}`;
           } else {
             newItem[col.key] = null;
           }
@@ -284,6 +290,7 @@ export const DataTable = forwardRef(<T extends { id: string }>(
 
     if (error) {
       console.error('Error saving:', error);
+      alert(language === 'ca' ? `Error en guardar: ${error.message}` : `Error al guardar: ${error.message}`);
     } else {
       // Sync logic for impagats
       if (tableName === 'impagats') {
@@ -367,7 +374,11 @@ export const DataTable = forwardRef(<T extends { id: string }>(
       if (key === 'tipus_pagament' && value) {
         newValues.pagat = true;
         if (!newValues.fecha_pagament) {
-          newValues.fecha_pagament = new Date().toISOString().split('T')[0];
+          const d = new Date();
+          const year = d.getFullYear();
+          const month = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          newValues.fecha_pagament = `${year}-${month}-${day}`;
         }
       }
       
@@ -380,7 +391,11 @@ export const DataTable = forwardRef(<T extends { id: string }>(
       if (key === 'pagat') {
         if (value === true) {
           if (!newValues.fecha_pagament) {
-            newValues.fecha_pagament = new Date().toISOString().split('T')[0];
+            const d = new Date();
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            newValues.fecha_pagament = `${year}-${month}-${day}`;
           }
         } else {
           newValues.fecha_pagament = null;
@@ -437,6 +452,81 @@ export const DataTable = forwardRef(<T extends { id: string }>(
     )
   );
 
+  const handleExport = () => {
+    const exportData = filteredData.map(item => {
+      const row: any = {};
+      columns.forEach(col => {
+        row[col.header] = item[col.key];
+      });
+      return row;
+    });
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Data");
+    XLSX.writeFile(wb, `${tableName}_export.xlsx`);
+  };
+
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      try {
+        const bstr = evt.target?.result;
+        const wb = XLSX.read(bstr, { type: 'binary' });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const data = XLSX.utils.sheet_to_json(ws);
+
+        // Map headers back to keys
+        const headerToKeyMap: { [key: string]: keyof T } = {};
+        columns.forEach(col => {
+          headerToKeyMap[col.header] = col.key;
+        });
+
+        const formattedData = data.map((row: any) => {
+          const newRow: any = {};
+          Object.keys(row).forEach(header => {
+            const key = headerToKeyMap[header];
+            if (key) {
+              const colDef = columns.find(c => c.key === key);
+              let val = row[header];
+              
+              // Handle Excel dates (which are numbers)
+              if (colDef?.type === 'date' && typeof val === 'number') {
+                // Excel dates are days since 1900-01-01
+                const date = new Date(Math.round((val - 25569) * 86400 * 1000));
+                val = date.toISOString().split('T')[0];
+              }
+
+              newRow[key] = val;
+            }
+          });
+          return newRow;
+        });
+
+        if (formattedData.length > 0) {
+          const { error } = await supabase.from(tableName).insert(formattedData);
+          if (error) throw error;
+          fetchData();
+          onDataChange?.();
+          alert(language === 'ca' ? 'Dades importades correctament' : 'Datos importados correctamente');
+        }
+      } catch (error: any) {
+        console.error('Error importing data:', error);
+        alert(language === 'ca' ? `Error en importar: ${error.message}` : `Error al importar: ${error.message}`);
+      }
+      
+      // Reset input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    };
+    reader.readAsBinaryString(file);
+  };
+
   return (
     <div className="space-y-4 relative">
       {!hideTable && (
@@ -453,13 +543,36 @@ export const DataTable = forwardRef(<T extends { id: string }>(
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <button
-              onClick={() => handleOpenPanel()}
-              className="flex items-center gap-2 px-5 py-2.5 bg-[#464971] text-white rounded-xl hover:bg-[#3b3d5e] transition-all font-semibold shadow-sm hover:shadow-md active:scale-95"
-            >
-              <Plus className="w-4 h-4" />
-              {t.add_buttons?.[tableName as keyof typeof t.add_buttons] || t.common.new_row}
-            </button>
+            <div className="flex items-center gap-2">
+              <input
+                type="file"
+                accept=".xlsx, .xls, .csv"
+                className="hidden"
+                ref={fileInputRef}
+                onChange={handleImport}
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-2 px-3 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold shadow-sm active:scale-95"
+                title={language === 'ca' ? 'Importar' : 'Importar'}
+              >
+                <Upload className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleExport}
+                className="flex items-center gap-2 px-3 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold shadow-sm active:scale-95"
+                title={language === 'ca' ? 'Exportar' : 'Exportar'}
+              >
+                <Download className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => handleOpenPanel()}
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#464971] text-white rounded-xl hover:bg-[#3b3d5e] transition-all font-semibold shadow-sm hover:shadow-md active:scale-95"
+              >
+                <Plus className="w-4 h-4" />
+                {t.add_buttons?.[tableName as keyof typeof t.add_buttons] || t.common.new_row}
+              </button>
+            </div>
           </div>
 
           {/* Table Container */}

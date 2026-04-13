@@ -18,6 +18,8 @@ export default function App() {
   const [globalEmpresa, setGlobalEmpresa] = useState<string>('CARNS ALIAGA');
   const impagatsRef = useRef<DataTableRef<Impagat>>(null);
   const impagatsByClientRef = useRef<ImpagatsByClientRef>(null);
+  const clientesRef = useRef<DataTableRef<Cliente>>(null);
+  const proveidorsRef = useRef<DataTableRef<Proveidor>>(null);
   const t = translations[language];
 
   const renderView = () => {
@@ -25,7 +27,7 @@ export default function App() {
       case 'analisi':
         return <Analysis language={language} />;
       case 'empresa':
-        return <CompanyInfo language={language} />;
+        return <CompanyInfo language={language} empresaContext={globalEmpresa} />;
       case 'registre':
         return (
           <div className="space-y-6">
@@ -94,6 +96,11 @@ export default function App() {
                 tableName="impagats"
                 language={language}
                 empresaContext={globalEmpresa}
+                onAddForeign={(foreignTable) => {
+                  if (foreignTable === 'client') {
+                    clientesRef.current?.openPanel();
+                  }
+                }}
                 onDataChange={() => {
                   impagatsByClientRef.current?.fetchData();
                 }}
@@ -128,6 +135,11 @@ export default function App() {
                   language={language}
                   empresaContext={globalEmpresa}
                   hideTable={true}
+                  onAddForeign={(foreignTable) => {
+                    if (foreignTable === 'client') {
+                      clientesRef.current?.openPanel();
+                    }
+                  }}
                   onDataChange={() => {
                     impagatsByClientRef.current?.fetchData();
                   }}
@@ -148,9 +160,9 @@ export default function App() {
           </div>
         );
       case 'gastos':
-        return <GastosManager language={language} empresaContext={globalEmpresa} />;
+        return <GastosManager language={language} empresaContext={globalEmpresa} proveidorsRef={proveidorsRef} />;
       case 'pagos_proveedores':
-        return <PagosProveedoresManager language={language} empresaContext={globalEmpresa} />;
+        return <PagosProveedoresManager language={language} empresaContext={globalEmpresa} proveidorsRef={proveidorsRef} />;
       case 'organitzacio':
         return <OrganitzacioManager language={language} empresaContext={globalEmpresa} />;
       case 'nominas':
@@ -181,6 +193,7 @@ export default function App() {
               <h2 className="text-2xl font-bold text-gray-900 tracking-tight">{t.sidebar.proveidors}</h2>
             </header>
             <DataTable<Proveidor>
+              ref={proveidorsRef}
               tableName="proveidors"
               language={language}
               empresaContext={globalEmpresa}
@@ -206,6 +219,7 @@ export default function App() {
               <p className="text-gray-500 text-sm">{t.subtitles.clientes}</p>
             </header>
             <DataTable<Cliente>
+              ref={clientesRef}
               tableName="clientes"
               language={language}
               empresaContext={globalEmpresa}
@@ -263,6 +277,64 @@ export default function App() {
           </motion.div>
         </AnimatePresence>
       </main>
+
+      {/* Hidden DataTable for Clientes so we can open its panel from anywhere. Placed at the end so its z-index stacks above other panels */}
+      <DataTable<Cliente>
+        ref={clientesRef}
+        tableName="clientes"
+        language={language}
+        empresaContext={globalEmpresa}
+        hideTable={true}
+        onDataChange={() => {
+          impagatsRef.current?.refreshOptions?.();
+        }}
+        columns={[
+          { key: 'nom', header: t.clientes.nom, type: 'text' },
+          { key: 'tipo', header: t.clientes.tipo, type: 'select', options: [] },
+          { key: 'empresa_cliente', header: t.clientes.empresa_cliente, type: 'text' },
+          { key: 'telefon', header: t.clientes.telefon, type: 'text' },
+          { key: 'es_empresa', header: t.clientes.es_empresa, type: 'boolean' },
+          { key: 'email', header: t.clientes.email, type: 'text' },
+          { key: 'nif', header: t.clientes.nif, type: 'text' },
+          { key: 'direccion', header: t.clientes.direccion, type: 'text' },
+          { key: 'poblacion', header: t.clientes.poblacion, type: 'text' },
+          { key: 'movil', header: t.clientes.movil, type: 'text' },
+          { key: 'iban', header: t.clientes.iban, type: 'text' },
+          { key: 'provincia', header: t.clientes.provincia, type: 'text' },
+          { key: 'pais', header: t.clientes.pais, type: 'text' },
+          { key: 'codi_postal', header: t.clientes.codi_postal, type: 'text' },
+          { key: 'empresa', header: t.registre.empresa, type: 'select', options: ['CARNS ALIAGA', 'EMBOTITS', 'CARN'] },
+        ]}
+      />
+
+      {/* Hidden DataTable for Proveidors so we can open its panel from anywhere */}
+      <DataTable<Proveidor>
+        ref={proveidorsRef}
+        tableName="proveidors"
+        language={language}
+        empresaContext={globalEmpresa}
+        hideTable={true}
+        onDataChange={() => {
+          // Refresh options in any table that might be open and using proveidors
+          // We can't easily target the specific one, but we can trigger a re-render or just let the quickAdd logic handle it.
+          // Actually, we can just leave it empty or add a global refresh if needed.
+          // The quickAdd function already calls fetchDynamicOptions, but since we are using the full panel,
+          // the parent component needs to know.
+          // For now, we don't have a direct ref to the specific Gastos/Pagos table here, 
+          // but we can just let the user refresh or we can add a way to refresh all.
+        }}
+        columns={[
+          { key: 'nom', header: t.proveidors.nom, type: 'text' },
+          { key: 'nif', header: t.proveidors.nif, type: 'text' },
+          { key: 'email', header: t.proveidors.email, type: 'text' },
+          { key: 'telefon', header: t.proveidors.telefon, type: 'text' },
+          { key: 'ciutat', header: t.proveidors.ciutat, type: 'text' },
+          { key: 'direccio', header: t.proveidors.direccio, type: 'text' },
+          { key: 'web', header: t.proveidors.web, type: 'text' },
+          { key: 'empresa', header: t.proveidors.empresa, type: 'select', options: ['CARNS ALIAGA', 'EMBOTITS', 'CARN'] },
+          { key: 'tipus', header: t.proveidors.tipus, type: 'select', options: [] },
+        ]}
+      />
     </div>
   );
 }

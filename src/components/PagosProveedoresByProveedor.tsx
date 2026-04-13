@@ -81,7 +81,7 @@ export const PagosProveedoresByProveedor = forwardRef<PagosProveedoresByProveedo
 
     useEffect(() => {
       fetchData();
-    }, []);
+    }, [empresaContext]);
 
     const toggleProveedor = (proveedor: string) => {
       const newExpanded = new Set(expandedProveedores);

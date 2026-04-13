@@ -7,23 +7,19 @@ import { PagosProveedoresByProveedor, PagosProveedoresByProveedorRef } from './P
 interface PagosProveedoresManagerProps {
   language: Language;
   empresaContext?: string;
+  proveidorsRef?: React.RefObject<DataTableRef<any>>;
 }
 
-export function PagosProveedoresManager({ language, empresaContext }: PagosProveedoresManagerProps) {
+export function PagosProveedoresManager({ language, empresaContext, proveidorsRef }: PagosProveedoresManagerProps) {
   const [subView, setSubView] = useState<'date' | 'proveedor'>('date');
   const t = translations[language];
   const pagosRef = useRef<DataTableRef<PagoProveedor>>(null);
   const pagosByProveedorRef = useRef<PagosProveedoresByProveedorRef>(null);
-  const proveedoresRef = useRef<DataTableRef<Proveidor>>(null);
 
   const handleAddProveedor = (columnKey: string) => {
     if (columnKey === 'proveedor') {
-      proveedoresRef.current?.openPanel();
+      proveidorsRef?.current?.openPanel();
     }
-  };
-
-  const handleProveedoresChange = () => {
-    pagosRef.current?.refreshOptions?.();
   };
 
   return (
@@ -119,27 +115,6 @@ export function PagosProveedoresManager({ language, empresaContext }: PagosProve
           />
         </>
       )}
-
-      {/* Hidden Proveedores table for the full creation form */}
-      <DataTable<Proveidor>
-        ref={proveedoresRef}
-        tableName="proveidors"
-        language={language}
-        empresaContext={empresaContext}
-        hideTable={true}
-        onDataChange={handleProveedoresChange}
-        columns={[
-          { key: 'nom', header: t.proveidors.nom, type: 'text' },
-          { key: 'nif', header: t.proveidors.nif, type: 'text' },
-          { key: 'email', header: t.proveidors.email, type: 'text' },
-          { key: 'telefon', header: t.proveidors.telefon, type: 'text' },
-          { key: 'ciutat', header: t.proveidors.ciutat, type: 'text' },
-          { key: 'direccio', header: t.proveidors.direccio, type: 'text' },
-          { key: 'web', header: t.proveidors.web, type: 'text' },
-          { key: 'empresa', header: t.proveidors.empresa, type: 'select', options: ['CARNS ALIAGA', 'EMBOTITS', 'CARN'] },
-          { key: 'tipus', header: t.proveidors.tipus, type: 'select', options: [] },
-        ]}
-      />
     </div>
   );
 }

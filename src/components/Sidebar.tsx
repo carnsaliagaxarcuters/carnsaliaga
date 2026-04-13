@@ -11,7 +11,6 @@ import {
   Settings, 
   BarChart3, 
   Building2, 
-  ShoppingBag,
   Globe,
   ChevronDown,
   ChevronRight,
@@ -52,7 +51,6 @@ export function Sidebar({ currentView, setCurrentView, language, setLanguage, gl
     { id: 'organitzacio', label: t.sidebar.organitzacio, icon: Settings },
     { id: 'analisi', label: t.sidebar.analisi, icon: BarChart3 },
     { id: 'empresa', label: t.sidebar.empresa, icon: Building2 },
-    { id: 'pedidos', label: t.sidebar.pedidos, icon: ShoppingBag },
   ];
 
   return (

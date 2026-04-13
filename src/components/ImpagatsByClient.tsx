@@ -78,7 +78,7 @@ export const ImpagatsByClient = forwardRef<ImpagatsByClientRef, ImpagatsByClient
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [empresaContext]);
 
   const toggleClient = (client: string) => {
     const newExpanded = new Set(expandedClients);

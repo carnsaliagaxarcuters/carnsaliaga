@@ -72,8 +72,15 @@ export function OrganitzacioManager({ language, empresaContext }: OrganitzacioMa
       setTreballadors(workersData || []);
 
       // Fetch schedules for the week
-      const startDateStr = weekDays[0].toISOString().split('T')[0];
-      const endDateStr = weekDays[13].toISOString().split('T')[0];
+      const getLocalDateString = (date: Date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+
+      const startDateStr = getLocalDateString(weekDays[0]);
+      const endDateStr = getLocalDateString(weekDays[13]);
 
       let schedulesQuery = supabase
         .from('horaris')
@@ -81,13 +88,8 @@ export function OrganitzacioManager({ language, empresaContext }: OrganitzacioMa
         .gte('fecha', startDateStr)
         .lte('fecha', endDateStr);
 
-      if (empresaContext && empresaContext !== 'Totes') {
-        if (empresaContext === 'HISTORIC') {
-          schedulesQuery = schedulesQuery.in('empresa', ['EMBOTITS', 'CARN']);
-        } else {
-          schedulesQuery = schedulesQuery.eq('empresa', empresaContext);
-        }
-      }
+      // We don't filter schedules by empresa because workers are already filtered by empresa.
+      // Filtering schedules by empresa causes issues with legacy data where empresa is NULL.
 
       const { data: schedulesData, error: schedulesError } = await schedulesQuery;
 
@@ -102,7 +104,7 @@ export function OrganitzacioManager({ language, empresaContext }: OrganitzacioMa
 
   useEffect(() => {
     fetchSchedules();
-  }, [currentDate, view]);
+  }, [currentDate, view, empresaContext]);
 
   const handlePrevWeek = () => {
     const newDate = new Date(currentDate);
@@ -134,8 +136,9 @@ export function OrganitzacioManager({ language, empresaContext }: OrganitzacioMa
           setHoraris(horaris.filter(h => h.id !== existingShift.id));
         } else {
           // Update
-          await supabase.from('horaris').update({ torn }).eq('id', existingShift.id);
-          setHoraris(horaris.map(h => h.id === existingShift.id ? { ...h, torn } : h));
+          const newEmpresa = (empresaContext && empresaContext !== 'Totes' && empresaContext !== 'HISTORIC') ? empresaContext : 'CARNS ALIAGA';
+          await supabase.from('horaris').update({ torn, empresa: newEmpresa }).eq('id', existingShift.id);
+          setHoraris(horaris.map(h => h.id === existingShift.id ? { ...h, torn, empresa: newEmpresa } : h));
         }
       } else if (torn !== '') {
         // Insert
@@ -274,7 +277,10 @@ export function OrganitzacioManager({ language, empresaContext }: OrganitzacioMa
                           {treballador.nom}
                         </td>
                         {weekDays.map((date, i) => {
-                          const dateStr = date.toISOString().split('T')[0];
+                          const year = date.getFullYear();
+                          const month = String(date.getMonth() + 1).padStart(2, '0');
+                          const day = String(date.getDate()).padStart(2, '0');
+                          const dateStr = `${year}-${month}-${day}`;
                           const shift = getShiftForCell(treballador.id, dateStr);
                           const shiftType = shift ? SHIFT_TYPES.find(t => t.id === shift.torn) : null;
                           const isSelected = selectedCell?.treballadorId === treballador.id && selectedCell?.date === dateStr;
