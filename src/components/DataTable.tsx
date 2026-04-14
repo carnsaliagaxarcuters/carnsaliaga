@@ -56,8 +56,37 @@ export const DataTable = forwardRef(<T extends { id: string }>(
   const [optionManagerConfig, setOptionManagerConfig] = useState<{ isOpen: boolean; columnKey: string } | null>(null);
   const [quickAddConfig, setQuickAddConfig] = useState<{ isOpen: boolean; column: Column<T> } | null>(null);
   const [quickAddValue, setQuickAddValue] = useState('');
+  const [creatorEmail, setCreatorEmail] = useState<string | null>(null);
+  const [updaterEmail, setUpdaterEmail] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const t = translations[language];
+
+  useEffect(() => {
+    if (isPanelOpen && originalItem) {
+      const fetchEmails = async () => {
+        const userId = (originalItem as any).user_id;
+        const updatedBy = (originalItem as any).updated_by;
+        
+        if (userId) {
+          const { data } = await supabase.rpc('get_user_email', { uid: userId });
+          setCreatorEmail(data);
+        } else {
+          setCreatorEmail(null);
+        }
+        
+        if (updatedBy) {
+          const { data } = await supabase.rpc('get_user_email', { uid: updatedBy });
+          setUpdaterEmail(data);
+        } else {
+          setUpdaterEmail(null);
+        }
+      };
+      fetchEmails();
+    } else {
+      setCreatorEmail(null);
+      setUpdaterEmail(null);
+    }
+  }, [isPanelOpen, originalItem]);
 
   useEffect(() => {
     fetchDynamicOptions();
@@ -211,9 +240,16 @@ export const DataTable = forwardRef(<T extends { id: string }>(
         else if (col.type === 'number') newItem[col.key] = 0;
         else if (col.type === 'boolean') newItem[col.key] = false;
         else if (col.type === 'date') {
-          // Only default 'fecha' to today, others empty
+          // Only default 'fecha' to previous working day, others empty
           if (col.key === 'fecha') {
             const d = new Date();
+            
+            // Default to previous working day (skip Sunday)
+            d.setDate(d.getDate() - 1);
+            if (d.getDay() === 0) { // 0 is Sunday
+              d.setDate(d.getDate() - 1); // Go back to Saturday
+            }
+            
             const year = d.getFullYear();
             const month = String(d.getMonth() + 1).padStart(2, '0');
             const day = String(d.getDate()).padStart(2, '0');
@@ -828,20 +864,36 @@ export const DataTable = forwardRef(<T extends { id: string }>(
                 ))}
               </div>
 
-              <div className="p-6 border-t border-gray-100 bg-gray-50/50 flex gap-3">
-                <button
-                  onClick={() => setIsPanelOpen(false)}
-                  className="flex-1 px-4 py-3 border border-gray-200 text-gray-600 rounded-xl font-bold text-sm hover:bg-white transition-all active:scale-95"
-                >
-                  {t.common.cancel}
-                </button>
-                <button
-                  onClick={handleSave}
-                  className="flex-1 px-4 py-3 bg-[#464971] text-white rounded-xl font-bold text-sm hover:bg-[#3b3d5e] shadow-lg shadow-[#464971]/20 transition-all active:scale-95 flex items-center justify-center gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  {t.common.save}
-                </button>
+              <div className="p-6 border-t border-gray-100 bg-gray-50/50 flex flex-col gap-4">
+                {(creatorEmail || updaterEmail) && (
+                  <div className="text-xs text-gray-400 space-y-1 px-1">
+                    {creatorEmail && (
+                      <p>
+                        <span className="font-medium text-gray-500">{language === 'ca' ? 'Creat per:' : 'Creado por:'}</span> {creatorEmail}
+                      </p>
+                    )}
+                    {updaterEmail && updaterEmail !== creatorEmail && (
+                      <p>
+                        <span className="font-medium text-gray-500">{language === 'ca' ? 'Última modificació:' : 'Última modificación:'}</span> {updaterEmail}
+                      </p>
+                    )}
+                  </div>
+                )}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setIsPanelOpen(false)}
+                    className="flex-1 px-4 py-3 border border-gray-200 text-gray-600 rounded-xl font-bold text-sm hover:bg-white transition-all active:scale-95"
+                  >
+                    {t.common.cancel}
+                  </button>
+                  <button
+                    onClick={handleSave}
+                    className="flex-1 px-4 py-3 bg-[#464971] text-white rounded-xl font-bold text-sm hover:bg-[#3b3d5e] shadow-lg shadow-[#464971]/20 transition-all active:scale-95 flex items-center justify-center gap-2"
+                  >
+                    <Save className="w-4 h-4" />
+                    {t.common.save}
+                  </button>
+                </div>
               </div>
             </motion.div>
           </>

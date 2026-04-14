@@ -1,4 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Session } from '@supabase/supabase-js';
+import { supabase } from './lib/supabase';
 import { Sidebar } from './components/Sidebar';
 import { DataTable, DataTableRef } from './components/DataTable';
 import { GastosManager } from './components/GastosManager';
@@ -7,11 +9,15 @@ import { OrganitzacioManager } from './components/OrganitzacioManager';
 import { Analysis } from './components/Analysis';
 import { CompanyInfo } from './components/CompanyInfo';
 import { ImpagatsByClient, ImpagatsByClientRef } from './components/ImpagatsByClient';
+import { Login } from './components/Login';
 import { Language, translations } from './lib/translations';
 import { motion, AnimatePresence } from 'motion/react';
 import { Registro, Impagat, Gasto, Nomina, Proveidor, Cliente } from './types';
+import { Loader2 } from 'lucide-react';
 
 export default function App() {
+  const [session, setSession] = useState<Session | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
   const [currentView, setCurrentView] = useState('registre');
   const [impagatsSubView, setImpagatsSubView] = useState<'date' | 'client'>('client');
   const [language, setLanguage] = useState<Language>('ca');
@@ -21,6 +27,33 @@ export default function App() {
   const clientesRef = useRef<DataTableRef<Cliente>>(null);
   const proveidorsRef = useRef<DataTableRef<Proveidor>>(null);
   const t = translations[language];
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setIsInitializing(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#464971]" />
+      </div>
+    );
+  }
+
+  if (!session) {
+    return <Login language={language} />;
+  }
 
   const renderView = () => {
     switch (currentView) {
@@ -261,6 +294,7 @@ export default function App() {
         setLanguage={setLanguage} 
         globalEmpresa={globalEmpresa}
         setGlobalEmpresa={setGlobalEmpresa}
+        userEmail={session.user.email}
       />
       
       <main className="flex-1 ml-64 p-8">

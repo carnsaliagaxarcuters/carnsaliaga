@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { cn } from '../lib/utils';
 import { translations, Language } from '../lib/translations';
+import { supabase } from '../lib/supabase';
 import { 
   LayoutDashboard, 
   FileText, 
@@ -15,7 +16,9 @@ import {
   ChevronDown,
   ChevronRight,
   Wallet,
-  CreditCard
+  CreditCard,
+  LogOut,
+  User
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -25,13 +28,18 @@ interface SidebarProps {
   setLanguage: (lang: Language) => void;
   globalEmpresa: string;
   setGlobalEmpresa: (empresa: string) => void;
+  userEmail?: string;
 }
 
-export function Sidebar({ currentView, setCurrentView, language, setLanguage, globalEmpresa, setGlobalEmpresa }: SidebarProps) {
+export function Sidebar({ currentView, setCurrentView, language, setLanguage, globalEmpresa, setGlobalEmpresa, userEmail }: SidebarProps) {
   const t = translations[language];
   const [isGastosOpen, setIsGastosOpen] = useState(
     currentView === 'gastos' || currentView === 'pagos_proveedores' || currentView === 'nominas'
   );
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
 
   const menuItems = [
     { id: 'registre', label: t.sidebar.registre, icon: FileText },
@@ -137,7 +145,24 @@ export function Sidebar({ currentView, setCurrentView, language, setLanguage, gl
         ))}
       </nav>
 
-      <div className="p-4 border-t border-gray-100">
+      <div className="p-4 border-t border-gray-100 space-y-2">
+        {userEmail && (
+          <div className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-2 overflow-hidden">
+              <User className="w-4 h-4 text-gray-400 shrink-0" />
+              <span className="text-xs font-medium text-gray-600 truncate" title={userEmail}>
+                {userEmail}
+              </span>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+              title={language === 'ca' ? 'Tancar sessió' : 'Cerrar sesión'}
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
+        )}
         <button
           onClick={() => setLanguage(language === 'ca' ? 'es' : 'ca')}
           className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-lg transition-all"
