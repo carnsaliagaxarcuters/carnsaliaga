@@ -72,6 +72,8 @@ export default function App() {
               tableName="registros"
               language={language}
               empresaContext={globalEmpresa}
+              enableDateRangeFilter={true}
+              dateRangeColumn="fecha"
               columns={[
                 { key: 'fecha', header: t.registre.fecha, type: 'date' },
                 { key: 'dia_setmana', header: t.registre.dia_setmana, type: 'text', hiddenInForm: true },

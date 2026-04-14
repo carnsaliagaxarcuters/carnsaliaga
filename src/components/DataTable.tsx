@@ -38,16 +38,35 @@ interface DataTableProps<T> {
   defaultSelectedAll?: boolean;
   onAddForeign?: (columnKey: keyof T) => void;
   empresaContext?: string;
+  enableDateRangeFilter?: boolean;
+  dateRangeColumn?: keyof T;
 }
 
 export const DataTable = forwardRef(<T extends { id: string }>(
-  { tableName, columns, language, onDataChange, hideTable, filterColumn, filterValue, selectable, defaultSelectedAll, onAddForeign, empresaContext }: DataTableProps<T>,
+  { tableName, columns, language, onDataChange, hideTable, filterColumn, filterValue, selectable, defaultSelectedAll, onAddForeign, empresaContext, enableDateRangeFilter, dateRangeColumn }: DataTableProps<T>,
   ref: React.Ref<DataTableRef<T>>
 ) => {
   const [data, setData] = useState<T[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  
+  // Initialize date range to last 30 days if enabled
+  const [startDate, setStartDate] = useState(() => {
+    if (enableDateRangeFilter) {
+      const d = new Date();
+      d.setDate(d.getDate() - 30);
+      return d.toISOString().split('T')[0];
+    }
+    return '';
+  });
+  const [endDate, setEndDate] = useState(() => {
+    if (enableDateRangeFilter) {
+      return new Date().toISOString().split('T')[0];
+    }
+    return '';
+  });
+
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Partial<T> | null>(null);
   const [originalItem, setOriginalItem] = useState<Partial<T> | null>(null);
@@ -159,6 +178,15 @@ export const DataTable = forwardRef(<T extends { id: string }>(
       }
     }
 
+    if (enableDateRangeFilter && dateRangeColumn) {
+      if (startDate) {
+        query = query.gte(String(dateRangeColumn), startDate);
+      }
+      if (endDate) {
+        query = query.lte(String(dateRangeColumn), endDate);
+      }
+    }
+
     const hasFecha = columns.some(c => c.key === 'fecha');
     if (hasFecha) {
       query = query.order('fecha', { ascending: false });
@@ -178,7 +206,7 @@ export const DataTable = forwardRef(<T extends { id: string }>(
 
   useEffect(() => {
     fetchData();
-  }, [tableName, filterValue, empresaContext]);
+  }, [tableName, filterValue, empresaContext, startDate, endDate]);
 
   useEffect(() => {
     const updateTotals = async () => {
@@ -568,17 +596,40 @@ export const DataTable = forwardRef(<T extends { id: string }>(
       {!hideTable && (
         <>
           {/* Top Bar */}
-          <div className="flex justify-between items-center gap-4">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder={t.common.search}
-                className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#464971]/10 focus:border-[#464971] transition-all shadow-sm"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+          <div className="flex flex-wrap justify-between items-center gap-4">
+            <div className="flex items-center gap-4 flex-1">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder={t.common.search}
+                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#464971]/10 focus:border-[#464971] transition-all shadow-sm"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              
+              {enableDateRangeFilter && (
+                <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl p-1 shadow-sm">
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="px-3 py-1.5 text-sm bg-transparent border-none focus:ring-0 text-gray-600 font-medium"
+                    title={language === 'ca' ? 'Data inici' : 'Fecha inicio'}
+                  />
+                  <span className="text-gray-300">-</span>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="px-3 py-1.5 text-sm bg-transparent border-none focus:ring-0 text-gray-600 font-medium"
+                    title={language === 'ca' ? 'Data fi' : 'Fecha fin'}
+                  />
+                </div>
+              )}
             </div>
+            
             <div className="flex items-center gap-2">
               <input
                 type="file"
