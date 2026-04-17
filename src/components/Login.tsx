@@ -40,9 +40,7 @@ export function Login({ language }: LoginProps) {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <div className="w-16 h-16 bg-[#464971] rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-            CA
-          </div>
+          <img src="/favicon.png" alt="Carns Aliaga Logo" className="w-20 h-20 object-contain rounded-2xl shadow-lg" />
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 tracking-tight">
           CARNS ALIAGA

@@ -45,6 +45,7 @@ export interface GastoPlantilla {
   proveidor: string;
   tipus: string;
   empresa: string;
+  fecha_cobro?: string;
 }
 
 export interface PagoProveedor {
@@ -121,6 +122,7 @@ export interface Treballador {
   dni: string;
   num_ss: string;
   tipus_contracte: string;
+  hores_contractades?: number;
   empresa: string;
 }
 
@@ -128,6 +130,9 @@ export interface Horari {
   id: string;
   treballador_id: string;
   fecha: string;
-  torn: string;
+  entrada_mati: string | null;
+  sortida_mati: string | null;
+  entrada_tarda: string | null;
+  sortida_tarda: string | null;
   empresa: string;
 }

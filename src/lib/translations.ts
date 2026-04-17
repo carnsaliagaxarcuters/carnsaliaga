@@ -79,6 +79,7 @@ export const translations = {
       plantilla: 'Plantilla de Gastos',
       mensual: 'Control Mensual',
       importar: 'Importar Plantilla',
+      fecha_cobro: 'Data Cobrament',
     },
     pagos_proveedores: {
       proveedor: 'Proveïdor',
@@ -107,6 +108,7 @@ export const translations = {
       dni: 'DNI',
       num_ss: 'Núm. SS',
       tipus_contracte: 'Tipus Contracte',
+      hores_contractades: 'Hores Contracte',
     },
     torns: {
       M: 'Matí',
@@ -116,6 +118,19 @@ export const translations = {
       V: 'Vacances',
       F: 'Festiu',
       B: 'Baixa',
+    },
+    horaris: {
+      titol: 'Horaris / Planning',
+      subtitol: 'Planificació setmanal de treballadors',
+      setmana_anterior: 'Setmana Anterior',
+      setmana_seguent: 'Setmana Següent',
+      total_setmana: 'Total Setmana',
+      editar_torn: 'Editar Torn',
+      entrada_mati: 'Entrada Matí',
+      sortida_mati: 'Eixida Matí',
+      entrada_tarda: 'Entrada Vesprada',
+      sortida_tarda: 'Eixida Vesprada',
+      hores: 'h',
     },
     proveidors: {
       nom: 'Nom',
@@ -223,6 +238,7 @@ export const translations = {
       plantilla: 'Plantilla de Gastos',
       mensual: 'Control Mensual',
       importar: 'Importar Plantilla',
+      fecha_cobro: 'Fecha Cobro',
     },
     pagos_proveedores: {
       proveedor: 'Proveedor',
@@ -251,6 +267,7 @@ export const translations = {
       dni: 'DNI',
       num_ss: 'Núm. SS',
       tipus_contracte: 'Tipo Contrato',
+      hores_contractades: 'Horas Contrato',
     },
     torns: {
       M: 'Mañana',
@@ -260,6 +277,19 @@ export const translations = {
       V: 'Vacaciones',
       F: 'Festivo',
       B: 'Baja',
+    },
+    horaris: {
+      titol: 'Horarios / Planning',
+      subtitol: 'Planificación semanal de trabajadores',
+      setmana_anterior: 'Semana Anterior',
+      setmana_seguent: 'Semana Siguiente',
+      total_setmana: 'Total Semana',
+      editar_torn: 'Editar Turno',
+      entrada_mati: 'Entrada Mañana',
+      sortida_mati: 'Salida Mañana',
+      entrada_tarda: 'Entrada Tarde',
+      sortida_tarda: 'Salida Tarde',
+      hores: 'h',
     },
     proveidors: {
       nom: 'Nombre',

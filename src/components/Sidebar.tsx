@@ -65,9 +65,7 @@ export function Sidebar({ currentView, setCurrentView, language, setLanguage, gl
     <div className="w-64 h-screen bg-white border-r border-gray-200 flex flex-col fixed left-0 top-0">
       <div className="p-6">
         <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2 mb-6">
-          <div className="w-8 h-8 bg-[#464971] rounded-lg flex items-center justify-center text-white">
-            CA
-          </div>
+          <img src="/favicon.png" alt="Carns Aliaga Logo" className="w-8 h-8 object-contain rounded-lg shadow-sm" />
           CARNS ALIAGA
         </h1>
 

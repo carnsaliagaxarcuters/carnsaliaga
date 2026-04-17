@@ -267,6 +267,7 @@ export function GastosManager({ language, empresaContext, proveidorsRef }: Gasto
               { key: 'import', header: t.gastos.import, type: 'number', currency: true },
               { key: 'proveidor', header: t.gastos.proveidor, type: 'select', foreignTable: 'proveidors', foreignLabel: 'nom' },
               { key: 'tipus', header: t.gastos.tipus, type: 'select', options: ['Mensual', 'Trimestral', 'Anual'] },
+              { key: 'fecha_cobro', header: t.gastos.fecha_cobro, type: 'text' },
               { key: 'empresa', header: t.registre.empresa, type: 'select', options: ['CARNS ALIAGA', 'EMBOTITS', 'CARN'] },
             ]}
           />

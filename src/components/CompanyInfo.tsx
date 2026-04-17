@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, MapPin, Phone, Mail, Globe, Save, Edit2, Users } from 'lucide-react';
+import { Building2, MapPin, Phone, Mail, Globe, Save, Edit2, Users, CalendarClock } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Empresa, Treballador } from '../types';
 import { DataTable } from './DataTable';
+import { ScheduleManager } from './ScheduleManager';
 import { translations, Language } from '../lib/translations';
 
 interface CompanyInfoProps {
@@ -14,6 +15,7 @@ export function CompanyInfo({ language, empresaContext }: CompanyInfoProps) {
   const [empresa, setEmpresa] = useState<Empresa | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'info' | 'treballadors' | 'horaris'>('info');
   const t = translations[language];
 
   const fetchEmpresa = async () => {
@@ -68,34 +70,66 @@ export function CompanyInfo({ language, empresaContext }: CompanyInfoProps) {
   }
 
   return (
-    <div className="space-y-12">
-      <section className="space-y-6">
-        <header className="flex justify-between items-center">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Informació de l'Empresa</h2>
-            <p className="text-gray-500 text-sm">Detalls corporatius i configuració</p>
-          </div>
-          <button
-            onClick={() => setIsEditing(!isEditing)}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700 shadow-sm"
-          >
-            {isEditing ? (
-              <>
-                <Save className="w-4 h-4" />
-                {t.common.save}
-              </>
-            ) : (
-              <>
-                <Edit2 className="w-4 h-4" />
-                Editar
-              </>
-            )}
-          </button>
-        </header>
+    <div className="space-y-8">
+      {/* Tabs */}
+      <div className="flex bg-gray-100 p-1 rounded-xl max-w-fit">
+        <button
+          onClick={() => setActiveTab('info')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            activeTab === 'info' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <Building2 className="w-4 h-4" />
+          {language === 'ca' ? 'Dades Empresa' : 'Datos Empresa'}
+        </button>
+        <button
+          onClick={() => setActiveTab('horaris')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            activeTab === 'horaris' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <CalendarClock className="w-4 h-4" />
+          {(t as any).horaris?.titol || 'Horarios'}
+        </button>
+        <button
+          onClick={() => setActiveTab('treballadors')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            activeTab === 'treballadors' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <Users className="w-4 h-4" />
+          {t.sidebar.nominas} / Empleados
+        </button>
+      </div>
 
-        <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
-          {isEditing ? (
-            <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {activeTab === 'info' && (
+        <section className="space-y-6">
+          <header className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Informació de l'Empresa</h2>
+              <p className="text-gray-500 text-sm">Detalls corporatius i configuració</p>
+            </div>
+            <button
+              onClick={() => setIsEditing(!isEditing)}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700 shadow-sm"
+            >
+              {isEditing ? (
+                <>
+                  <Save className="w-4 h-4" />
+                  {t.common.save}
+                </>
+              ) : (
+                <>
+                  <Edit2 className="w-4 h-4" />
+                  Editar
+                </>
+              )}
+            </button>
+          </header>
+
+          <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
+            {isEditing ? (
+              <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider ml-1">Nom</label>
@@ -198,33 +232,43 @@ export function CompanyInfo({ language, empresaContext }: CompanyInfoProps) {
           )}
         </div>
       </section>
+      )}
 
-      <section className="space-y-6">
-        <header className="flex items-center gap-3">
-          <div className="p-2 bg-indigo-100 rounded-lg text-indigo-600">
-            <Users className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Listado de Trabajadores</h2>
-            <p className="text-gray-500 text-sm">Gestión de personal y datos contractuales</p>
-          </div>
-        </header>
+      {activeTab === 'treballadors' && (
+        <section className="space-y-6">
+          <header className="flex items-center gap-3">
+            <div className="p-2 bg-indigo-100 rounded-lg text-indigo-600">
+              <Users className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Listado de Trabajadores</h2>
+              <p className="text-gray-500 text-sm">Gestión de personal y datos contractuales</p>
+            </div>
+          </header>
 
-        <DataTable<Treballador>
-          tableName="treballadors"
-          language={language}
-          empresaContext={empresaContext}
-          columns={[
-            { key: 'nom', header: t.treballadors.nom, type: 'text' },
-            { key: 'direccio', header: t.treballadors.direccio, type: 'text' },
-            { key: 'fecha_naixement', header: t.treballadors.fecha_naixement, type: 'date' },
-            { key: 'dni', header: t.treballadors.dni, type: 'text' },
-            { key: 'num_ss', header: t.treballadors.num_ss, type: 'text' },
-            { key: 'tipus_contracte', header: t.treballadors.tipus_contracte, type: 'select', options: ['Indefinit', 'Temporal', 'Pràctiques', 'Fix Discontinu'] },
-            { key: 'empresa', header: t.registre.empresa, type: 'select', options: ['CARNS ALIAGA', 'EMBOTITS', 'CARN'] },
-          ]}
-        />
-      </section>
+          <DataTable<Treballador>
+            tableName="treballadors"
+            language={language}
+            empresaContext={empresaContext}
+            columns={[
+              { key: 'nom', header: t.treballadors.nom, type: 'text' },
+              { key: 'direccio', header: t.treballadors.direccio, type: 'text' },
+              { key: 'fecha_naixement', header: t.treballadors.fecha_naixement, type: 'date' },
+              { key: 'dni', header: t.treballadors.dni, type: 'text' },
+              { key: 'num_ss', header: t.treballadors.num_ss, type: 'text' },
+              { key: 'tipus_contracte', header: t.treballadors.tipus_contracte, type: 'select', options: ['Indefinit', 'Temporal', 'Pràctiques', 'Fix Discontinu'] },
+              { key: 'hores_contractades', header: t.treballadors.hores_contractades || 'Horas', type: 'number' },
+              { key: 'empresa', header: t.registre.empresa, type: 'select', options: ['CARNS ALIAGA', 'EMBOTITS', 'CARN'] },
+            ]}
+          />
+        </section>
+      )}
+
+      {activeTab === 'horaris' && (
+        <section>
+          <ScheduleManager language={language} empresaContext={empresaContext} />
+        </section>
+      )}
     </div>
   );
 }
